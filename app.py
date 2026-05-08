@@ -235,69 +235,115 @@ if a is not None and b is not None and c is not None:
                 imag_part = math.sqrt(abs(discriminant)) / (2*a_float)
                 roots = [complex(real_part, imag_part), complex(real_part, -imag_part)]
             
-            # Display solutions section first
-            st.markdown("### Solutions")
-            col1, col2 = st.columns(2)
+            # Display results in tabs
+            tab1, tab2, tab3 = st.tabs(["Solutions", "Graph", "Step-by-step"])
             
-            with col1:
-                st.markdown("**Analysis**")
-                st.markdown(f"Δ = {discriminant:.4f}")
+            with tab1:
+                col1, col2 = st.columns(2)
                 
-                if discriminant > 0:
-                    st.success("Two real roots")
-                elif discriminant == 0:
-                    st.warning("One real root (double)")
-                else:
-                    st.info("Complex conjugate roots")
-            
-            with col2:
-                st.markdown("**Roots**")
-                
-                if discriminant > 0:
-                    st.markdown(f"""
-                    <div class="solution-box">
-                    x₁ = {roots[0]:.4f}<br>
-                    x₂ = {roots[1]:.4f}
-                    </div>
-                    """, unsafe_allow_html=True)
+                with col1:
+                    st.markdown("### Analysis")
+                    st.markdown(f"**Δ = {discriminant:.4f}**")
                     
-                    # Try fractional representation
-                    try:
-                        x1_frac = Fraction(roots[0]).limit_denominator(1000)
-                        x2_frac = Fraction(roots[1]).limit_denominator(1000)
-                        st.caption(f"≈ {x1_frac}, {x2_frac}")
-                    except:
-                        pass
+                    if discriminant > 0:
+                        st.success("Two real roots")
+                    elif discriminant == 0:
+                        st.warning("One real root (double)")
+                    else:
+                        st.info("Complex conjugate roots")
+                
+                with col2:
+                    st.markdown("### Roots")
+                    
+                    if discriminant > 0:
+                        st.markdown(f"""
+                        <div class="solution-box">
+                        x₁ = {roots[0]:.4f}<br>
+                        x₂ = {roots[1]:.4f}
+                        </div>
+                        """, unsafe_allow_html=True)
                         
-                elif discriminant == 0:
+                        # Try fractional representation
+                        try:
+                            x1_frac = Fraction(roots[0]).limit_denominator(1000)
+                            x2_frac = Fraction(roots[1]).limit_denominator(1000)
+                            st.caption(f"≈ {x1_frac}, {x2_frac}")
+                        except:
+                            pass
+                            
+                    elif discriminant == 0:
+                        st.markdown(f"""
+                        <div class="solution-box">
+                        x = {roots[0]:.4f} (double)
+                        </div>
+                        """, unsafe_allow_html=True)
+                        
+                        try:
+                            x_frac = Fraction(roots[0]).limit_denominator(1000)
+                            st.caption(f"≈ {x_frac}")
+                        except:
+                            pass
+                    else:
+                        st.markdown(f"""
+                        <div class="solution-box">
+                        x₁ = {roots[0].real:.4f} + {roots[0].imag:.4f}i<br>
+                        x₂ = {roots[1].real:.4f} - {roots[1].imag:.4f}i
+                        </div>
+                        """, unsafe_allow_html=True)
+            
+            with tab2:
+                st.markdown("### Graph")
+                fig = create_quadratic_plot(a_float, b_float, c_float, roots)
+                st.plotly_chart(fig, use_container_width=True)
+                
+                # Vertex info
+                vertex_x = -b_float / (2*a_float)
+                vertex_y = a_float * vertex_x**2 + b_float * vertex_x + c_float
+                st.caption(f"Vertex: ({vertex_x:.4f}, {vertex_y:.4f})")
+            
+            with tab3:
+                st.markdown("### Step-by-step solution")
+                st.markdown(f"""
+                **Step 1: Identify coefficients**
+                - a = {a_float}
+                - b = {b_float}
+                - c = {c_float}
+                
+                **Step 2: Calculate discriminant**
+                Δ = b² - 4ac
+                Δ = ({b_float})² - 4({a_float})({c_float})
+                Δ = {b_float**2} - {4*a_float*c_float}
+                Δ = {discriminant}
+                
+                **Step 3: Apply quadratic formula**
+                x = (-b ± √Δ) / (2a)
+                """)
+                
+                if discriminant >= 0:
                     st.markdown(f"""
-                    <div class="solution-box">
-                    x = {roots[0]:.4f} (double)
-                    </div>
-                    """, unsafe_allow_html=True)
-                    
-                    try:
-                        x_frac = Fraction(roots[0]).limit_denominator(1000)
-                        st.caption(f"≈ {x_frac}")
-                    except:
-                        pass
+                    x = (-({b_float}) ± √{discriminant}) / (2({a_float}))
+                    x = ({-b_float} ± {math.sqrt(discriminant):.4f}) / {2*a_float}
+                    """)
                 else:
                     st.markdown(f"""
-                    <div class="solution-box">
-                    x₁ = {roots[0].real:.4f} + {roots[0].imag:.4f}i<br>
-                    x₂ = {roots[1].real:.4f} - {roots[1].imag:.4f}i
-                    </div>
-                    """, unsafe_allow_html=True)
-            
-            # Graph section below solutions
-            st.markdown("### Graph")
-            fig = create_quadratic_plot(a_float, b_float, c_float, roots)
-            st.plotly_chart(fig, use_container_width=True)
-            
-            # Vertex info
-            vertex_x = -b_float / (2*a_float)
-            vertex_y = a_float * vertex_x**2 + b_float * vertex_x + c_float
-            st.caption(f"Vertex: ({vertex_x:.4f}, {vertex_y:.4f})")
+                    Since Δ < 0, we have complex roots:
+                    x = (-({b_float}) ± √({discriminant})) / (2({a_float}))
+                    x = ({-b_float} ± {math.sqrt(abs(discriminant)):.4f}i) / {2*a_float}
+                    """)
+                
+                st.markdown("**Step 4: Final solutions**")
+                if discriminant > 0:
+                    st.markdown(f"""
+                    - x₁ = {roots[0]:.6f}
+                    - x₂ = {roots[1]:.6f}
+                    """)
+                elif discriminant == 0:
+                    st.markdown(f"- x = {roots[0]:.6f} (repeated)")
+                else:
+                    st.markdown(f"""
+                    - x₁ = {roots[0].real:.6f} + {roots[0].imag:.6f}i
+                    - x₂ = {roots[1].real:.6f} - {roots[1].imag:.6f}i
+                    """)
 
 else:
     st.info("Enter coefficients to solve")
